@@ -7,11 +7,13 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const wrapAsync = require('./utils/wrapAsync.js');
 const expresserror = require('./utils/expresserror.js');
-const listingsSchema = require('./joischema.js');
+const {listingsSchema, reviewsSchema} = require('./joischema.js');
+const Listing = require('./models/listing.js');
+const Review = require('./models/reviews.js');
+const reviews = require('./models/reviews.js');
+// const reviews = require('./models/reviews.js');
 const Port = 2004;
 
-// import the listing.js path
-const Listing = require(path.join(__dirname, 'models', "listing.js"));
 app.set("view engine", 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.engine('ejs', ejsMate);
@@ -30,8 +32,21 @@ app.get('/', (req, res)=>{
     res.send("Working");
 })
 
+// validate listing on server side using Joi
 const Validatelistings = (req, res, next)=>{
     const {error} = listingsSchema.validate(req.body);
+    console.log(error);
+    if(error){
+        let errMsg = error.details.map((el) => el.message).join(",");
+        throw new expresserror(400, errMsg);
+    }else{
+        next();
+    }
+}
+
+// validate reviews on server side using Joi
+const ValidateReviews = (req, res, next)=>{
+    const {error} = reviewsSchema.validate(req.body);
     console.log(error);
     if(error){
         let errMsg = error.details.map((el) => el.message).join(",");
@@ -52,7 +67,7 @@ app.get('/listings/new', (req, res)=>{
     res.render('listings/new.ejs');
 })
 
-// create route 
+// create route  
 app.post('/listings', Validatelistings, wrapAsync(async (req, res)=>{
     const newListing = new Listing(req.body.listing);
     await newListing.save();
@@ -62,7 +77,7 @@ app.post('/listings', Validatelistings, wrapAsync(async (req, res)=>{
 // show route
 app.get('/listings/:id', wrapAsync(async (req, res)=>{
     let {id} = req.params;
-    let listing = await Listing.findById(id);
+    let listing = await Listing.findById(id).populate('reviews');
     res.render("listings/show.ejs", {listing});
 }))
 
@@ -83,10 +98,31 @@ app.put("/listings/:id", Validatelistings, wrapAsync(async (req, res)=>{
 //delete request
 app.delete('/listings/:id', wrapAsync(async (req, res)=>{
     let {id} = req.params;
-    let deldata = await Listing.findByIdAndDelete(id);
+    let listing = await Listing.findById(id);
+    let deldata = await listing.deleteOne();
     console.log(deldata);
     res.redirect(`/listings`);
 }))
+
+// reviews 
+// post route
+app.post('/listings/:id/reviews', ValidateReviews, wrapAsync(async (req, res)=>{
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+    console.log(newReview);
+    listing.reviews.push(newReview);
+    await listing.save();
+    await newReview.save();
+    res.redirect(`/listings/${listing.id}`);
+}));
+
+// delete route
+app.delete('/listings/:id/reviews/:review_id', wrapAsync(async(req, res)=>{
+    let {id, review_id} = req.params;
+    await Listing.findByIdAndUpdate(id, {$pull : {reviews : review_id}});
+    await Review.findByIdAndDelete(review_id);
+    res.redirect(`/listings/${id}`);
+}));
 
 app.all('/{*path}', (req, res, next)=>{
     next(new expresserror(404, "Page not found!"));
@@ -98,5 +134,5 @@ app.use((err, req, res, next)=>{
 })
 
 app.listen(Port, ()=>{
-    console.log("App is listeining");
+    console.log("App is listening");
 })

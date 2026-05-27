@@ -58,6 +58,11 @@ body{
     margin-bottom: 2rem;
 }
 
+.card-reviews{
+    border: solid rgb(66, 65, 65) 1px;
+    margin-bottom: 2rem;
+}
+
 .card-img-top{
     border-radius: 1rem !important;
     width: 100% !important;
