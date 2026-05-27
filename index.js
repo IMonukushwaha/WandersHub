@@ -7,12 +7,10 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const wrapAsync = require('./utils/wrapAsync.js');
 const expresserror = require('./utils/expresserror.js');
-const {listingsSchema, reviewsSchema} = require('./joischema.js');
-const Listing = require('./models/listing.js');
-const Review = require('./models/reviews.js');
-const reviews = require('./models/reviews.js');
 
+// routes
 const listings = require('./routes/listings.js');
+const reviews = require('./routes/reviews.js');
 
 const Port = 2004;
 
@@ -34,51 +32,8 @@ app.get('/', (req, res)=>{
     res.send("Working");
 })
 
-// validate listing on server side using Joi
-const Validatelistings = (req, res, next)=>{
-    const {error} = listingsSchema.validate(req.body);
-    console.log(error);
-    if(error){
-        let errMsg = error.details.map((el) => el.message).join(",");
-        throw new expresserror(400, errMsg);
-    }else{
-        next();
-    }
-}
-
-// validate reviews on server side using Joi
-const ValidateReviews = (req, res, next)=>{
-    const {error} = reviewsSchema.validate(req.body);
-    console.log(error);
-    if(error){
-        let errMsg = error.details.map((el) => el.message).join(",");
-        throw new expresserror(400, errMsg);
-    }else{
-        next();
-    }
-}
-
 app.use('/listings', listings);
-
-// reviews 
-// post route
-app.post('/listings/:id/reviews', ValidateReviews, wrapAsync(async (req, res)=>{
-    let listing = await Listing.findById(req.params.id);
-    let newReview = new Review(req.body.review);
-    console.log(newReview);
-    listing.reviews.push(newReview);
-    await listing.save();
-    await newReview.save();
-    res.redirect(`/listings/${listing.id}`);
-}));
-
-// delete route
-app.delete('/listings/:id/reviews/:review_id', wrapAsync(async(req, res)=>{
-    let {id, review_id} = req.params;
-    await Listing.findByIdAndUpdate(id, {$pull : {reviews : review_id}});
-    await Review.findByIdAndDelete(review_id);
-    res.redirect(`/listings/${id}`);
-}));
+app.use('/listings/:id/reviews', reviews);
 
 app.all('/{*path}', (req, res, next)=>{
     next(new expresserror(404, "Page not found!"));

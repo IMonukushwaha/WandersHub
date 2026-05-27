@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const wrapAsync = require('../utils/wrapAsync.js');
 const expresserror = require('../utils/expresserror.js');
-const {listingsSchema, reviewsSchema} = require('../joischema.js');
+const { listingsSchema } = require('../joischema.js');
 const Listing = require('../models/listing.js');
-
 
 // validate listing on server side using Joi
 const Validatelistings = (req, res, next)=>{
@@ -17,7 +16,7 @@ const Validatelistings = (req, res, next)=>{
         next();
     }
 }
-
+ 
 // listing route
 router.get('/', wrapAsync(async (req, res)=>{
     const alllistings = await Listing.find({});
