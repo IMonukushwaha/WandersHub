@@ -7,6 +7,8 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const wrapAsync = require('./utils/wrapAsync.js');
 const expresserror = require('./utils/expresserror.js');
+const session = require('express-session');
+var flash = require('connect-flash');
 
 // routes
 const listings = require('./routes/listings.js');
@@ -21,6 +23,20 @@ app.use(express.urlencoded({extended : true}));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
+const sessionoptions = {
+  secret: 'michaeljoksonn',
+  resave: false,
+  saveUninitialized: true,
+  cookie : {
+    expires : Date.now() + 24*60*60*1000,
+    maxage :   24*60*60*1000,
+    httponly : true
+  }
+}
+
+app.use(session(sessionoptions));
+app.use(flash());
+
 async function main() {
     await mongoose.connect(Mongo_url);
 }
@@ -30,6 +46,11 @@ main().then(res => {console.log("Connected to DB")})
 
 app.get('/', (req, res)=>{
     res.send("Working");
+})
+
+app.use((req, res, next)=>{
+    res.locals.success = req.flash('success');
+    next();
 })
 
 app.use('/listings', listings);

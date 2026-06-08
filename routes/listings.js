@@ -28,10 +28,11 @@ router.get('/new', (req, res)=>{
     res.render('listings/new.ejs');
 })
 
-// create route  
+// create a new listing route  
 router.post('/', Validatelistings, wrapAsync(async (req, res)=>{
     const newListing = new Listing(req.body.listing);
     await newListing.save();
+    req.flash('success', 'Listing is added succesfully!')
     res.redirect('/listings');
 }))
 
