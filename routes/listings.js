@@ -40,6 +40,10 @@ router.post('/', Validatelistings, wrapAsync(async (req, res)=>{
 router.get('/:id', wrapAsync(async (req, res)=>{
     let {id} = req.params;
     let listing = await Listing.findById(id).populate('reviews');
+    if(!listing){
+        req.flash('error', 'Listing is not in the database!');
+        return res.redirect('/listings');
+    }
     res.render("listings/show.ejs", {listing});
 }))
 
@@ -47,6 +51,10 @@ router.get('/:id', wrapAsync(async (req, res)=>{
 router.get('/:id/edit', wrapAsync(async (req, res)=>{
     let {id} = req.params;
     let listing = await Listing.findById(id);
+    if(!listing){
+        req.flash('error', 'Listing is not in the database!');
+        return res.redirect('/listings');
+    }
     res.render('listings/edit.ejs', {listing});
 }))
 
@@ -54,6 +62,7 @@ router.get('/:id/edit', wrapAsync(async (req, res)=>{
 router.put("/:id", Validatelistings, wrapAsync(async (req, res)=>{
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id, {...req.body.listing});
+    req.flash('success', 'Listing updated succesfully!');
     res.redirect(`/listings/${id}`);
 }))
 
@@ -63,6 +72,7 @@ router.delete('/:id', wrapAsync(async (req, res)=>{
     let listing = await Listing.findById(id);
     let deldata = await listing.deleteOne();
     console.log(deldata);
+    req.flash('success', 'Listing is deleted succesfully!');
     res.redirect(`/listings`);
 }))
 
