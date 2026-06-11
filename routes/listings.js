@@ -16,7 +16,7 @@ const Validatelistings = (req, res, next)=>{
         next();
     }
 }
- 
+
 // listing route
 router.get('/', wrapAsync(async (req, res)=>{
     const alllistings = await Listing.find({});

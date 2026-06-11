@@ -8,11 +8,17 @@ const ejsMate = require('ejs-mate');
 const wrapAsync = require('./utils/wrapAsync.js');
 const expresserror = require('./utils/expresserror.js');
 const session = require('express-session');
-var flash = require('connect-flash');
+const flash = require('connect-flash');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+
+// models
+const User = require('./models/users.js');
 
 // routes
-const listings = require('./routes/listings.js');
-const reviews = require('./routes/reviews.js');
+const routerlistings = require('./routes/listings.js');
+const routerreviews = require('./routes/reviews.js');
+const routerusers = require('./routes/user.js');
 
 const Port = 2004;
 
@@ -37,6 +43,20 @@ const sessionoptions = {
 app.use(session(sessionoptions));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+// use static authenticate method of model in LocalStrategy
+passport.use(new LocalStrategy(User.authenticate()));
+// authenticate() Generates a function that is used in Passport's LocalStrategy
+
+// use static serialize and deserialize of model for passport session support
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// serializeUser() Generates a function that is used by Passport to serialize users into the session
+// deserializeUser() Generates a function that is used by Passport to deserialize users into the session
+
 async function main() {
     await mongoose.connect(Mongo_url);
 }
@@ -48,14 +68,24 @@ app.get('/', (req, res)=>{
     res.send("Working");
 })
 
+// app.get('/getuser', async (req, res)=>{
+//     const fakeuser = new User({
+//         email : "student@gmsil.com",
+//         username : "student-nitkkr"
+//     })
+//     let registered_user = await User.register(fakeuser, "powerhouse");
+//     res.send(registered_user);
+// });
+
 app.use((req, res, next)=>{
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
 })
 
-app.use('/listings', listings);
-app.use('/listings/:id/reviews', reviews);
+app.use('/listings', routerlistings);
+app.use('/listings/:id/reviews', routerreviews);
+app.use('/user', routerusers);
 
 app.all('/{*path}', (req, res, next)=>{
     next(new expresserror(404, "Page not found!"));
