@@ -8,15 +8,19 @@ router.get('/signup', (req, res)=>{
     res.render('users/signup.ejs');
 });
 
-router.post('/signup', wrapAsync( async (req, res)=>{
-    console.log("BODY:", req.body);
+router.post('/signup', wrapAsync( async (req, res, next)=>{
     try{
         let {username, email, password} = req.body;
         const newuser = new User({email, username});
         let registered_user = await User.register(newuser, password);
-        req.flash('success', "Welcome to WandersHub");
-        console.log(registered_user);
-        res.redirect('/listings');
+        req.login(registered_user, (err)=>{
+            if(err){
+                return next(err);
+            }
+            req.flash('success', "Welcome to WandersHub");
+            console.log(registered_user);
+            res.redirect('/listings');
+        })
     }catch(e){
         req.flash('error', e.message);
         console.log(e);
@@ -35,5 +39,16 @@ router.post('/login',
         res.redirect('/listings');
     }
 );
+
+// logout
+router.get('/logout', (req, res, next)=>{
+    req.logout((err) => {
+        if(err){
+            return next(err);
+        }
+        req.flash('success', "Succesfully logout");
+        res.redirect('/listings');
+    })
+});
 
 module.exports = router;

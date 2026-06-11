@@ -4,6 +4,7 @@ const wrapAsync = require('../utils/wrapAsync.js');
 const expresserror = require('../utils/expresserror.js');
 const { listingsSchema } = require('../joischema.js');
 const Listing = require('../models/listing.js');
+const {loggedIn} = require('../middleware.js');
 
 // validate listing on server side using Joi
 const Validatelistings = (req, res, next)=>{
@@ -24,12 +25,12 @@ router.get('/', wrapAsync(async (req, res)=>{
 }))
 
 // route new listing
-router.get('/new', (req, res)=>{
+router.get('/new', loggedIn, (req, res)=>{
     res.render('listings/new.ejs');
 })
 
 // create a new listing route  
-router.post('/', Validatelistings, wrapAsync(async (req, res)=>{
+router.post('/', loggedIn, Validatelistings, wrapAsync(async (req, res)=>{
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     req.flash('success', 'Listing is added succesfully!')
@@ -48,7 +49,7 @@ router.get('/:id', wrapAsync(async (req, res)=>{
 }))
 
 //edit route for updation
-router.get('/:id/edit', wrapAsync(async (req, res)=>{
+router.get('/:id/edit', loggedIn, wrapAsync(async (req, res)=>{
     let {id} = req.params;
     let listing = await Listing.findById(id);
     if(!listing){
@@ -59,7 +60,7 @@ router.get('/:id/edit', wrapAsync(async (req, res)=>{
 }))
 
 // update route
-router.put("/:id", Validatelistings, wrapAsync(async (req, res)=>{
+router.put("/:id", loggedIn, Validatelistings, wrapAsync(async (req, res)=>{
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id, {...req.body.listing});
     req.flash('success', 'Listing updated succesfully!');
@@ -67,7 +68,7 @@ router.put("/:id", Validatelistings, wrapAsync(async (req, res)=>{
 }))
 
 //delete request
-router.delete('/:id', wrapAsync(async (req, res)=>{
+router.delete('/:id', loggedIn, wrapAsync(async (req, res)=>{
     let {id} = req.params;
     let listing = await Listing.findById(id);
     let deldata = await listing.deleteOne();

@@ -47,7 +47,35 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // use static authenticate method of model in LocalStrategy
-passport.use(new LocalStrategy(User.authenticate()));
+passport.use(new LocalStrategy(
+    { usernameField: 'username' },
+    async (username, password, done) => {
+        try {
+            // Find by username OR email
+            const user = await User.findOne({
+                $or: [
+                    { username: username },
+                    { email: username }
+                ]
+            });
+
+            if (!user) {
+                return done(null, false, { message: 'Invalid username/email or password' });
+            }
+            console.log("Found user:", user);        // is user being found?
+            console.log("Username field:", user?.username); // what's stored?
+
+            // passport-local-mongoose's authenticate method
+            User.authenticate()(user.username, password, (err, authenticatedUser, errorMsg) => {
+                if (err) return done(err);
+                if (!authenticatedUser) return done(null, false, errorMsg);
+                return done(null, authenticatedUser);
+            });
+        } catch (err) {
+            return done(err);
+        }
+    }
+));
 // authenticate() Generates a function that is used in Passport's LocalStrategy
 
 // use static serialize and deserialize of model for passport session support
@@ -80,6 +108,7 @@ app.get('/', (req, res)=>{
 app.use((req, res, next)=>{
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
+    res.locals.curruser = req.user;
     next();
 })
 
