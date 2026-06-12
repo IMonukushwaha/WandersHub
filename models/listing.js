@@ -28,7 +28,11 @@ const listingSchema = new schema({
     reviews : [{
         type : mongoose.Schema.Types.ObjectId,
         ref : "Review",
-    }]
+    }],
+    owner : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "User",
+    }
 });
 
 listingSchema.pre('deleteOne', { document: true, query: false }, async function () {
