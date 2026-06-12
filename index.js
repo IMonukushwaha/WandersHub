@@ -96,15 +96,6 @@ app.get('/', (req, res)=>{
     res.send("Working");
 })
 
-// app.get('/getuser', async (req, res)=>{
-//     const fakeuser = new User({
-//         email : "student@gmsil.com",
-//         username : "student-nitkkr"
-//     })
-//     let registered_user = await User.register(fakeuser, "powerhouse");
-//     res.send(registered_user);
-// });
-
 app.use((req, res, next)=>{
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
