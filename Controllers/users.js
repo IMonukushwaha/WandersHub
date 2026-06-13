@@ -1,0 +1,45 @@
+const User = require('../models/users.js');
+
+module.exports.RenderSingupForm = (req, res)=>{
+    res.render('users/signup.ejs');
+}
+
+module.exports.Singup = async (req, res, next)=>{
+    try{
+        let {username, email, password} = req.body;
+        const newuser = new User({email, username});
+        let registered_user = await User.register(newuser, password);
+        req.login(registered_user, (err)=>{
+            if(err){
+                return next(err);
+            }
+            req.flash('success', "Welcome to WandersHub");
+            console.log(registered_user);
+            res.redirect('/listings');
+        })
+    }catch(e){
+        req.flash('error', e.message);
+        console.log(e);
+        res.redirect('/user/signup');
+    }
+}
+
+module.exports.RenderLoginForm = (req, res)=>{
+    res.render('users/login.ejs');
+}
+
+module.exports.login = async (req, res)=>{
+        req.flash('success', "Welcome back to WandersHub");
+        let url = res.locals.redirectUrl || "/listings";
+        res.redirect(url);
+}
+
+module.exports.Logout = (req, res, next)=>{
+    req.logout((err) => {
+        if(err){
+            return next(err);
+        }
+        req.flash('success', "Succesfully logout");
+        res.redirect('/listings');
+    })
+}
