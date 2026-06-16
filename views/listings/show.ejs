@@ -1,4 +1,8 @@
 <% layout("layouts/boilerplate") %>
+<script>
+    const coordinates = <%- JSON.stringify(listing.geometry.coordinates) %>;
+    const loc = <%- JSON.stringify(listing.location) %>
+</script>
 <body>
 <div class="row">
     <div class="col-8 offset-3">
@@ -63,6 +67,7 @@
     </form>
 
     <% } %>
+    <% if(listing.reviews.length > 0) { %>
     <b><p> Reviews </p></b>
     <div class="row">
         <% for(review of listing.reviews){%>
@@ -77,6 +82,13 @@
             </form> 
         </div>
         <% } %>
+    </div>
+    <% } %>
+    <div class="mb-3">
+        <h3>Where you'll be</h3>
+        <div id="map"></div>
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="/js/map.js"></script>
     </div>
     <a href="/listings" class="btn btn-dark back-btn">Back to Listings</a>
     </div>
