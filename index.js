@@ -5,16 +5,18 @@ if(process.env.NODE_ENV != 'production'){
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
-const Mongo_url = 'mongodb://127.0.0.1:27017/WandersHub';
+// const Mongo_url = 'mongodb://127.0.0.1:27017/WandersHub';
 const path = require('path');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const wrapAsync = require('./utils/wrapAsync.js');
 const expresserror = require('./utils/expresserror.js');
 const session = require('express-session');
+const MongoStore = require('connect-mongo').default;
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const db_url = process.env.ATLAS_URL;
 
 // models
 const User = require('./models/users.js');
@@ -33,8 +35,21 @@ app.use(express.urlencoded({extended : true}));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
+const store = MongoStore.create({ 
+        mongoUrl: db_url,
+        crypto :{
+            secret: process.env.SECRET
+        },
+        touchAfter: 24 * 3600 // time period in seconds
+})
+
+store.on("error", (err)=>{
+    console.log("Error in mongodb store", err);
+})
+
 const sessionoptions = {
-  secret: 'michaeljoksonn',
+    store: store,
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
   cookie : {
@@ -90,14 +105,14 @@ passport.deserializeUser(User.deserializeUser());
 // deserializeUser() Generates a function that is used by Passport to deserialize users into the session
 
 async function main() {
-    await mongoose.connect(Mongo_url);
+    await mongoose.connect(db_url);
 }
 
 main().then(res => {console.log("Connected to DB")})
 .catch(err => console.log(err));
 
 app.get('/', (req, res)=>{
-    res.send("Working");
+    res.redirect('/listings');
 })
 
 app.use((req, res, next)=>{

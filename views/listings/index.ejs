@@ -1,9 +1,113 @@
 <% layout("layouts/boilerplate") %>
-<h1>ALL LISTINGS</h1>
-<!-- <form method="GET" action="/listings/new">
-    <button>Create a new Listing</button>
-</form> -->
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+<style>
+    .filters{
+    display:flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap:2rem;
+    overflow-x:auto;
+    scrollbar-width:none; /* Firefox */
+    }
+
+    .filters::-webkit-scrollbar{
+        display:none;
+    }
+
+    .filter{
+        flex-shrink:0;
+        opacity: 0.7;
+    }
+    .filter:hover{
+        opacity: 1;
+    }
+    .filter p{
+        font-size: 0.8rem;
+    }
+    @media (max-width: 768px) {
+        .filters{
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+        .filter{
+        flex-shrink: 0;
+        }
+
+        .tax-toggle{
+            flex-shrink: 0;
+        }
+    }
+    .tax-info{
+        display: none;
+    }
+    .tax-toggle{
+        display: flex;
+        align-items: center;
+        border: 1px solid black;
+        border-radius: 10px;
+        padding: 0.5rem;
+        margin-left: 3rem;
+        height: 3.25rem;
+        width : 10rem;
+    }
+</style>
+<div class="filters mt-2">
+    <div class="filter">
+        <i class="fa-solid fa-fire"></i>
+        <p>Trending</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-house"></i>
+        <p>Rooms</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-fire"></i>
+        <p>Trending</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-house"></i>
+        <p>House</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-fire"></i>
+        <p>Trending</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-house"></i>
+        <p>House</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-fire"></i>
+        <p>Trending</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-house"></i>
+        <p>House</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-fire"></i>
+        <p>Trending</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-house"></i>
+        <p>House</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-fire"></i>
+        <p>Trending</p>
+    </div>
+    <div class="filter">
+        <i class="fa-solid fa-house"></i>
+        <p>House</p>
+    </div>
+    <div class="tax-toggle">
+        <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
+        <label class="form-check-label" for="switchCheckDefault">Display taxes</label>
+        </div>
+    </div>
+</div>
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
 <% for(let list of alllistings) { %>
     <a href="/listings/<%= list._id %>" class="listing-link">
     <div class="card col">
@@ -13,6 +117,7 @@
         <p class="card-text">
             <b><%= list.title %></b> <br>
             &#8377;<%=list.price.toLocaleString("en-IN") %>/Night
+            <i class="tax-info">&nbsp; +18%tax</i>
         </p>
     </div>
     </div>
@@ -20,3 +125,16 @@
 <% } %>
 </div>
 
+<script>
+    let taxswitch  = document.getElementById('switchCheckDefault');
+    taxswitch.addEventListener('click', ()=>{
+        let taxes = document.getElementsByClassName('tax-info');
+        for(tax of taxes){
+            if(tax.style.display == "inline"){
+                tax.style.display = "none";
+            }else{
+                tax.style.display = "inline";
+            }
+        }
+    })
+</script>

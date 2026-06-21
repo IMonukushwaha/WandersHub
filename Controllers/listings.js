@@ -11,13 +11,15 @@ module.exports.RendernewForm = (req, res)=>{
 }
 
 module.exports.CreateNewListing = async (req, res)=>{
-    let url = req.file.path;
-    let filename = req.file.filename;
+    let url = req.file.secure_url;
+    let filename = req.file.asset_folder;
     const newListing = new Listing(req.body.listing);
     newListing.owner = req.user._id;
     newListing.image = {url, filename};
+    console.log(url);
+    console.log(filename);
     let coord = await geocode(newListing.location);
-    console.log([coord.lng, coord.lat]);
+    // console.log([coord.lng, coord.lat]);
     let grometry = {
         type : 'Point',
         coordinates : [coord.lng, coord.lat]
@@ -61,6 +63,8 @@ module.exports.EditLisitng = async (req, res)=>{
     if(req.file){
         let url = req.file.path;
         let filename = req.file.filename;
+        console.log(url);
+        console.log(filename);
         listing.image = {url, filename};
         await listing.save();
     }
