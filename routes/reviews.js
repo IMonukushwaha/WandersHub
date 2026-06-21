@@ -4,7 +4,7 @@ const wrapAsync = require('../utils/wrapAsync.js');
 const Review = require('../models/reviews.js');
 const Listing = require('../models/listing.js');
 const {ValidateReviews, loggedIn, isAuthor} = require('../middleware.js');
-const ReviewController = require('../Controllers/Reviews.js');
+const ReviewController = require('../controllers/Reviews.js');
 
 // reviews 
 // post route
